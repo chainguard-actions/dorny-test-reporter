@@ -1,5 +1,7 @@
 # dorny/test-reporter
 
+Displays test results from popular testing frameworks directly in GitHub
+
 Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/dorny/test-reporter](https://github.com/dorny/test-reporter).
 
 ## Versions
