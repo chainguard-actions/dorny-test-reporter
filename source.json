@@ -1,4 +1,6 @@
 {
-  "upstream": "dorny/test-reporter",
-  "version": "v3.0.0"
+  "owner": "dorny",
+  "repo": "test-reporter",
+  "version": "",
+  "url": "https://github.com/dorny/test-reporter"
 }
