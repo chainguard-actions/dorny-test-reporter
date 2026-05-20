@@ -1,7 +1,0 @@
-{
-  "owner": "dorny",
-  "name": "test-reporter",
-  "visibility": "internal",
-  "description": "Displays test results from popular testing frameworks directly in GitHub",
-  "block_publish": false
-}
