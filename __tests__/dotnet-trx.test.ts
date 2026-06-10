@@ -1,0 +1,199 @@
+import * as fs from 'fs'
+import * as path from 'path'
+
+import {DotnetTrxParser} from '../src/parsers/dotnet-trx/dotnet-trx-parser.js'
+import {ParseOptions} from '../src/test-parser.js'
+import {DEFAULT_OPTIONS, getReport, ReportOptions} from '../src/report/get-report.js'
+import {normalizeFilePath} from '../src/utils/path-utils.js'
+
+import {fileURLToPath} from 'url'
+import {dirname} from 'path'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+describe('dotnet-trx tests', () => {
+  it('produces empty test run result when there are no test cases', async () => {
+    const fixturePath = path.join(__dirname, 'fixtures', 'empty', 'dotnet-trx.trx')
+    const filePath = normalizeFilePath(path.relative(__dirname, fixturePath))
+    const fileContent = fs.readFileSync(fixturePath, {encoding: 'utf8'})
+
+    const opts: ParseOptions = {
+      parseErrors: true,
+      trackedFiles: []
+    }
+
+    const parser = new DotnetTrxParser(opts)
+    const result = await parser.parse(filePath, fileContent)
+    expect(result.tests).toBe(0)
+    expect(result.result).toBe('success')
+  })
+
+  it('produces empty test run result when TestDefinitions is empty', async () => {
+    const fixturePath = path.join(__dirname, 'fixtures', 'empty', 'dotnet-trx-empty-test-definitions.trx')
+    const filePath = normalizeFilePath(path.relative(__dirname, fixturePath))
+    const fileContent = fs.readFileSync(fixturePath, {encoding: 'utf8'})
+
+    const opts: ParseOptions = {
+      parseErrors: true,
+      trackedFiles: []
+    }
+
+    const parser = new DotnetTrxParser(opts)
+    const result = await parser.parse(filePath, fileContent)
+    expect(result.tests).toBe(0)
+    expect(result.result).toBe('success')
+  })
+
+  it.each([['dotnet-trx'], ['dotnet-xunitv3']])('matches %s report snapshot', async reportName => {
+    const fixturePath = path.join(__dirname, 'fixtures', `${reportName}.trx`)
+    const outputPath = path.join(__dirname, '__outputs__', `${reportName}.md`)
+    const filePath = normalizeFilePath(path.relative(__dirname, fixturePath))
+    const fileContent = fs.readFileSync(fixturePath, {encoding: 'utf8'})
+
+    const opts: ParseOptions = {
+      parseErrors: true,
+      trackedFiles: [
+        'DotnetTests.Unit/Calculator.cs',
+        'DotnetTests.XUnitTests/CalculatorTests.cs',
+        'DotnetTests.XUnitV3Tests/FixtureTests.cs'
+      ]
+      //workDir: 'C:/Users/Michal/Workspace/dorny/test-check/reports/dotnet/'
+    }
+
+    const parser = new DotnetTrxParser(opts)
+    const result = await parser.parse(filePath, fileContent)
+    expect(result).toMatchSnapshot()
+
+    const report = getReport([result])
+    fs.mkdirSync(path.dirname(outputPath), {recursive: true})
+    fs.writeFileSync(outputPath, report)
+  })
+
+  it('matches report snapshot (only failed tests)', async () => {
+    const fixturePath = path.join(__dirname, 'fixtures', 'dotnet-trx.trx')
+    const outputPath = path.join(__dirname, '__outputs__', 'dotnet-trx-only-failed.md')
+    const filePath = normalizeFilePath(path.relative(__dirname, fixturePath))
+    const fileContent = fs.readFileSync(fixturePath, {encoding: 'utf8'})
+
+    const opts: ParseOptions = {
+      parseErrors: true,
+      trackedFiles: ['DotnetTests.Unit/Calculator.cs', 'DotnetTests.XUnitTests/CalculatorTests.cs']
+      //workDir: 'C:/Users/Michal/Workspace/dorny/test-check/reports/dotnet/'
+    }
+
+    const parser = new DotnetTrxParser(opts)
+    const result = await parser.parse(filePath, fileContent)
+    expect(result).toMatchSnapshot()
+
+    const reportOptions: ReportOptions = {
+      ...DEFAULT_OPTIONS,
+      listSuites: 'all',
+      listTests: 'failed'
+    }
+    const report = getReport([result], reportOptions)
+    fs.mkdirSync(path.dirname(outputPath), {recursive: true})
+    fs.writeFileSync(outputPath, report)
+  })
+
+  it('report from FluentValidation test results matches snapshot', async () => {
+    const fixturePath = path.join(__dirname, 'fixtures', 'external', 'FluentValidation.Tests.trx')
+    const outputPath = path.join(__dirname, '__outputs__', 'fluent-validation-test-results.md')
+    const filePath = normalizeFilePath(path.relative(__dirname, fixturePath))
+    const fileContent = fs.readFileSync(fixturePath, {encoding: 'utf8'})
+
+    const opts: ParseOptions = {
+      trackedFiles: [],
+      parseErrors: true
+    }
+
+    const parser = new DotnetTrxParser(opts)
+    const result = await parser.parse(filePath, fileContent)
+    expect(result).toMatchSnapshot()
+
+    const report = getReport([result])
+    fs.mkdirSync(path.dirname(outputPath), {recursive: true})
+    fs.writeFileSync(outputPath, report)
+  })
+
+  it('report from SilentNotes test results matches snapshot', async () => {
+    const fixturePath = path.join(__dirname, 'fixtures', 'external', 'SilentNotes.trx')
+    const outputPath = path.join(__dirname, '__outputs__', 'silent-notes-test-results.md')
+    const filePath = normalizeFilePath(path.relative(__dirname, fixturePath))
+    const fileContent = fs.readFileSync(fixturePath, {encoding: 'utf8'})
+
+    const opts: ParseOptions = {
+      trackedFiles: [],
+      parseErrors: true
+    }
+
+    const parser = new DotnetTrxParser(opts)
+    const result = await parser.parse(filePath, fileContent)
+    expect(result).toMatchSnapshot()
+
+    const report = getReport([result])
+    fs.mkdirSync(path.dirname(outputPath), {recursive: true})
+    fs.writeFileSync(outputPath, report)
+  })
+
+  it('report does not include a title by default', async () => {
+    const fixturePath = path.join(__dirname, 'fixtures', 'dotnet-trx.trx')
+    const filePath = normalizeFilePath(path.relative(__dirname, fixturePath))
+    const fileContent = fs.readFileSync(fixturePath, {encoding: 'utf8'})
+
+    const opts: ParseOptions = {
+      parseErrors: true,
+      trackedFiles: []
+    }
+
+    const parser = new DotnetTrxParser(opts)
+    const result = await parser.parse(filePath, fileContent)
+    const report = getReport([result])
+    // Report should have the badge as the first line
+    expect(report).toMatch(/^!\[Tests failed]/)
+  })
+
+  it.each([
+    ['empty string', ''],
+    ['space', ' '],
+    ['tab', '\t'],
+    ['newline', '\n']
+  ])('report does not include a title when configured value is %s', async (_, reportTitle) => {
+    const fixturePath = path.join(__dirname, 'fixtures', 'dotnet-trx.trx')
+    const filePath = normalizeFilePath(path.relative(__dirname, fixturePath))
+    const fileContent = fs.readFileSync(fixturePath, {encoding: 'utf8'})
+
+    const opts: ParseOptions = {
+      parseErrors: true,
+      trackedFiles: []
+    }
+
+    const parser = new DotnetTrxParser(opts)
+    const result = await parser.parse(filePath, fileContent)
+    const report = getReport([result], {
+      ...DEFAULT_OPTIONS,
+      reportTitle
+    })
+    // Report should have the badge as the first line
+    expect(report).toMatch(/^!\[Tests failed]/)
+  })
+
+  it('report includes a custom report title', async () => {
+    const fixturePath = path.join(__dirname, 'fixtures', 'dotnet-trx.trx')
+    const filePath = normalizeFilePath(path.relative(__dirname, fixturePath))
+    const fileContent = fs.readFileSync(fixturePath, {encoding: 'utf8'})
+
+    const opts: ParseOptions = {
+      parseErrors: true,
+      trackedFiles: []
+    }
+
+    const parser = new DotnetTrxParser(opts)
+    const result = await parser.parse(filePath, fileContent)
+    const report = getReport([result], {
+      ...DEFAULT_OPTIONS,
+      reportTitle: 'My Custom Title'
+    })
+    // Report should have the title as the first line
+    expect(report).toMatch(/^# My Custom Title\n/)
+  })
+})

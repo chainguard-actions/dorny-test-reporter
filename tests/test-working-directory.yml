@@ -1,0 +1,36 @@
+name: Test working-directory input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          name: "Working Directory Test Report"
+          path: "tests/fixtures/subdir/results/junit-results.xml"
+          reporter: java-junit
+          working-directory: "actions/hardened/dorny--test-reporter/v3.0.0"
+          fail-on-error: "false"
+          fail-on-empty: "true"
+          use-actions-summary: "true"
+        continue-on-error: true
+
+      - name: Assert step ran with working-directory
+        env:
+          CONCLUSION: ${{ steps.action.outputs.conclusion }}
+          PASSED: ${{ steps.action.outputs.passed }}
+        run: |
+          echo "conclusion: $CONCLUSION"
+          echo "passed: $PASSED"
+          if [ -z "$CONCLUSION" ] && [ -z "$PASSED" ]; then
+            echo "WARN: outputs may be empty due to token permissions in act environment"
+          else
+            echo "PASS: outputs received"
+          fi

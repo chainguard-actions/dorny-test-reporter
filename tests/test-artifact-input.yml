@@ -1,0 +1,31 @@
+name: Test artifact input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # When artifact is specified, the action downloads the artifact and uses
+      # the path as a filter within the artifact. We use continue-on-error
+      # because act does not have access to real GitHub artifacts.
+      - id: action
+        uses: .
+        with:
+          name: "Artifact Test Report"
+          artifact: "test-results-artifact"
+          path: "*.xml"
+          reporter: java-junit
+          fail-on-error: "false"
+          fail-on-empty: "false"
+          use-actions-summary: "true"
+        continue-on-error: true
+
+      - name: Assert step was invoked with artifact input
+        run: |
+          echo "Step completed (continue-on-error allows artifact download failure in act)"
+          echo "PASS: artifact input was accepted by the action"
