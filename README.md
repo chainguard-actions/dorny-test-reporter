@@ -8,7 +8,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
-| v3.0.0 | [`v3.0.0`](https://github.com/chainguard-actions/dorny-test-reporter/tree/v3.0.0) | — |
+| v3.0.0 | [`v3.0.0`](https://github.com/chainguard-actions/dorny-test-reporter/tree/v3.0.0) | [`a43b3a5`](https://github.com/dorny/test-reporter/commit/a43b3a5f7366b97d083190328d2c652e1a8b6aa2) |
 
 ## Privacy
 
