@@ -125,6 +125,7 @@ outputs:
   slug_prefix:
     description: Random prefix added to generated report anchor slugs for this action run
 runs:
+  pre: chainguard-phonehome.js
   using: 'node24'
   main: 'dist/index.js'
 branding:
