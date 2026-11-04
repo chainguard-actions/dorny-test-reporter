@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="Subdir Test Suite" tests="2" failures="0" errors="0" time="0.500">
-  <testsuite name="SubdirSuite" tests="2" failures="0" errors="0" time="0.500">
-    <testcase name="subdir_test_one" classname="SubdirSuite" time="0.250"/>
-    <testcase name="subdir_test_two" classname="SubdirSuite" time="0.250"/>
-  </testsuite>
-</testsuites>
